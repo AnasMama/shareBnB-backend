@@ -28,7 +28,6 @@ export default class UserController {
 
     Promise.all([UserManager.findByMail(email), argon2.hash(password)]).then(
       ([existingEmail, hashPassword]) => {
-      
         if (existingEmail[0])
           return res.status(403).send({
             error: "Email already used",
@@ -107,14 +106,16 @@ export default class UserController {
 
   static browse: RequestHandler = (req: Request, res: Response) => {
     UserManager.findAll()
-      .then(rows => {
+      .then((rows) => {
+        const users = rows as unknown as User[];
         res.status(201).send(
-          rows
-          // .map((person) => ({
-          //   id: person.id,
-          //   email: person.email,
-          //   role: person.role_id,
-          // }))
+          users.map((person) => ({
+            firstname: person.firstname,
+            lastname: person.lastname,
+            birthdate: person.birthdate,
+            email: person.email,
+            role: person.role_id === 1 ? "Administrateur" : "Utilisateur",
+          }))
         );
       })
       .catch((err: Error) => {
