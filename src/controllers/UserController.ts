@@ -68,7 +68,6 @@ export default class UserController {
       return res.status(500).send({
         error: "Password missing",
       });
-    console.log(req.body);
 
     UserManager.findByMail(email)
       .then((existingEmail) => {

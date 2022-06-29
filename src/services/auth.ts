@@ -32,7 +32,7 @@ const authorization = (req: RequestAuth, res: Response, next: NextFunction) => {
 };
 
 const isAdmin = (req: RequestAuth, res: Response, next: NextFunction) => {
-  if (req.userRole === "ROLE_ADMIN") return next();
+  if (req.userRole === "1") return next();
   return res.sendStatus(403);
 };
 
