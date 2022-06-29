@@ -9,6 +9,10 @@ interface Error {
   message: string;
 }
 
+interface UserWithRole extends User {
+  role_name: string;
+}
+
 export default class UserController {
   static register: RequestHandler = async (req: Request, res: Response) => {
     const { email, password, role } = req.body;
@@ -85,7 +89,7 @@ export default class UserController {
             const token = generateToken(existingEmail[0]);
             return res
               .cookie("access_token", token, {
-                httpOnly: true,
+                // httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
               })
               .status(200)
@@ -106,16 +110,16 @@ export default class UserController {
   };
 
   static browse: RequestHandler = (req: Request, res: Response) => {
-    UserManager.findAll()
+    UserManager.findAllWithRole()
       .then((rows) => {
-        const users = rows as unknown as User[];
+        const users = rows as unknown as UserWithRole[];
         res.status(201).send(
           users.map((person) => ({
             firstname: person.firstname,
             lastname: person.lastname,
             birthdate: person.birthdate,
             email: person.email,
-            role: person.role_id === 1 ? "Administrateur" : "Utilisateur",
+            role: person.role_name,
           }))
         );
       })
