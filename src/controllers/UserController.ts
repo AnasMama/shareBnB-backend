@@ -28,8 +28,8 @@ export default class UserController {
 
     Promise.all([UserManager.findByMail(email), argon2.hash(password)]).then(
       ([existingEmail, hashPassword]) => {
-        console.log(existingEmail)
-        if (existingEmail)
+      
+        if (existingEmail[0])
           return res.status(403).send({
             error: "Email already used",
           });
