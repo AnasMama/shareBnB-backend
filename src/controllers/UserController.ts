@@ -51,59 +51,59 @@ export default class UserController {
     );
   };
 
-  // static login: RequestHandler = (req: Request, res: Response) => {
-  //   const { email, password } = req.body;
+  static login: RequestHandler = (req: Request, res: Response) => {
+    const { email, password } = req.body;
 
-  //   if (!email) {
-  //     if (!password) {
-  //       return res.status(500).send({
-  //         error: "Email and password missing",
-  //       });
-  //     }
-  //     return res.status(500).send({
-  //       error: "Email missing",
-  //     });
-  //   }
-  //   if (!password)
-  //     return res.status(500).send({
-  //       error: "Password missing",
-  //     });
+    if (!email) {
+      if (!password) {
+        return res.status(500).send({
+          error: "Email and password missing",
+        });
+      }
+      return res.status(500).send({
+        error: "Email missing",
+      });
+    }
+    if (!password)
+      return res.status(500).send({
+        error: "Password missing",
+      });
 
-  //   UserManager.findByMail(email)
-  //     .then((existingEmail) => {
-  //       if (!existingEmail[0]) {
-  //         return res.status(500).send({
-  //           error: "Email isn't registered",
-  //         });
-  //       } else {
-  //         const { id, email, password: hash, role_id } = existingEmail[0];
-  //         argon2.verify(hash, password).then((passVerified: boolean) => {
-  //           if (!passVerified)
-  //             return res.status(403).send({
-  //               error: "Wrong password",
-  //             });
-  //           const token = generateToken(existingEmail[0]);
-  //           return res
-  //             .cookie("access_token", token, {
-  //               httpOnly: true,
-  //               secure: process.env.NODE_ENV === "production",
-  //             })
-  //             .status(200)
-  //             .send({
-  //               id,
-  //               email,
-  //               role_id,
-  //             });
-  //         });
-  //       }
-  //     })
-  //     .catch((err: Error) => {
-  //       console.error(err);
-  //       res.status(500).send({
-  //         error: err.message,
-  //       });
-  //     });
-  // };
+    UserManager.findByMail(email)
+      .then((existingEmail) => {
+        if (!existingEmail[0]) {
+          return res.status(500).send({
+            error: "Email isn't registered",
+          });
+        } else {
+          const { id, email, password: hash, role_id } = existingEmail[0];
+          argon2.verify(hash, password).then((passVerified: boolean) => {
+            if (!passVerified)
+              return res.status(403).send({
+                error: "Wrong password",
+              });
+            const token = generateToken(existingEmail[0]);
+            return res
+              .cookie("access_token", token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+              })
+              .status(200)
+              .send({
+                id,
+                email,
+                role_id,
+              });
+          });
+        }
+      })
+      .catch((err: Error) => {
+        console.error(err);
+        res.status(500).send({
+          error: err.message,
+        });
+      });
+  };
 
   static browse: RequestHandler = (req: Request, res: Response) => {
     UserManager.findAll()

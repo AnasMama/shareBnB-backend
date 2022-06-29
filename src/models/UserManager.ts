@@ -23,6 +23,15 @@ export default class UserManager extends AbstractManager {
       });
   }
 
+  static async findByLogin(login: string): Promise<User[]> {
+    return (await this.connection)
+      .query(`SELECT * FROM ${UserManager.table} WHERE login = ?`, [login])
+      .then((result) => {
+        const users = (result[0] as unknown) as User[]
+        return users;
+      });
+  }
+
   static async insert(user: User) {
     return (await this.connection).query(
       `INSERT INTO ${UserManager.table} SET ?`,
