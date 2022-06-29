@@ -1,8 +1,9 @@
 import { Request, RequestHandler, Response } from "express";
 import { UserManager } from "../models";
-import { User } from "../models/UserManager";
+import { UpdatedUser, User } from "../models/UserManager";
 import * as argon2 from "argon2";
 import { generateToken } from "../services/auth";
+import Joi from "joi";
 
 interface Error {
   message: string;
@@ -67,6 +68,7 @@ export default class UserController {
       return res.status(500).send({
         error: "Password missing",
       });
+    console.log(req.body);
 
     UserManager.findByMail(email)
       .then((existingEmail) => {
@@ -130,18 +132,31 @@ export default class UserController {
     return res.clearCookie("access_token").sendStatus(200);
   };
 
-  static edit = (req: Request, res: Response) => {
-    const user = req.body;
-
-    user.id = parseInt(req.params.id, 10);
-
-    UserManager.update(user)
-      .then(([result]: any) => {
-        if (result.affectedRows === 0) {
-          res.sendStatus(404);
-        } else {
-          res.sendStatus(204);
-        }
+  static edit = async (req: Request, res: Response) => {
+    const id: number = parseInt(req.params.id, 10);
+    const user: UpdatedUser = { ...req.body };
+    
+    if (req.body.password) {
+      const hashedPassword = await argon2.hash(req.body.password);
+      user.password = hashedPassword;
+    }
+    
+    UserManager.validate(req.body, false)
+    .then((validationError: Joi.ValidationError | undefined) => {
+      if (validationError) return Promise.reject("Invalid data try again");
+      
+        return UserManager.update(user, id)
+          .then(([result]: any) => {
+            if (result.affectedRows === 0) {
+              res.sendStatus(404);
+            } else {
+              res.sendStatus(204);
+            }
+          })
+          .catch((err: Error) => {
+            console.error(err);
+            res.sendStatus(500);
+          });
       })
       .catch((err: Error) => {
         console.error(err);
