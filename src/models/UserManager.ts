@@ -1,5 +1,6 @@
 import Joi from "joi";
 import AbstractManager from "./AbstractManager";
+import RoleManager from "./RoleManager";
 
 export interface User {
   id: number;
@@ -26,11 +27,26 @@ export interface UpdatedUser {
 export default class UserManager extends AbstractManager {
   static table = "user";
 
+  static async findWithRole(id: number) {
+    return (await this.connection).query(
+      `SELECT ${UserManager.table}.*, ${RoleManager.table}.role_name FROM  ${UserManager.table} WHERE id = ? JOIN ${RoleManager.table} ON ${RoleManager.table}.id = ${UserManager.table}.role_id`,
+      [id]
+    );
+  }
+
+  static async findAllWithRole() {
+    return (await this.connection)
+      .query(
+        `SELECT ${UserManager.table}.*, ${RoleManager.table}.role_name FROM  ${UserManager.table} JOIN ${RoleManager.table} ON ${RoleManager.table}.id = ${UserManager.table}.role_id`
+      )
+      .then((result) => result[0]);
+  }
+
   static async findByMail(email: string): Promise<User[]> {
     return (await this.connection)
       .query(`SELECT * FROM ${UserManager.table} WHERE email = ?`, [email])
       .then((result) => {
-        const users = (result[0] as unknown) as User[]
+        const users = result[0] as unknown as User[];
         return users;
       });
   }
@@ -39,7 +55,7 @@ export default class UserManager extends AbstractManager {
     return (await this.connection)
       .query(`SELECT * FROM ${UserManager.table} WHERE login = ?`, [login])
       .then((result) => {
-        const users = (result[0] as unknown) as User[]
+        const users = result[0] as unknown as User[];
         return users;
       });
   }
@@ -52,17 +68,15 @@ export default class UserManager extends AbstractManager {
   }
 
   static async insertMany(users: User[]) {
-    const sql: string = `INSERT INTO ${UserManager.table} SET (?)`
-    return (await this.connection).query(
-      sql,
-      [users]
-    );
+    const sql: string = `INSERT INTO ${UserManager.table} SET (?)`;
+    return (await this.connection).query(sql, [users]);
   }
 
   static async update(user: UpdatedUser, id: number) {
-    return (await this.connection).query(`UPDATE ${UserManager.table} SET ? WHERE id = ?`, [
-      user, id
-    ]);
+    return (await this.connection).query(
+      `UPDATE ${UserManager.table} SET ? WHERE id = ?`,
+      [user, id]
+    );
   }
 
   static async validate(data: User | UpdatedUser, forCreation: boolean = true) {
@@ -76,5 +90,5 @@ export default class UserManager extends AbstractManager {
       email: Joi.string().email().max(255).presence(presence),
       role_id: Joi.number().min(1).presence(presence),
     }).validate(data, { abortEarly: false }).error;
-  };
+  }
 }

@@ -11,11 +11,11 @@ const secret = process.env.JWT_AUTH_SECRET;
 
 const generateToken = (user: User) => {
   const { id, email, role_id } = user;
-  if (secret) jwt.sign({ id, email, role_id }, secret, { expiresIn: "1h" });
+  if (secret) return jwt.sign({ id, email, role_id }, secret, { expiresIn: "1h" });
 };
 
 const authorization = (req: RequestAuth, res: Response, next: NextFunction) => {
-  const token = req.cookies.access_token;
+  const token = req.headers.cookie?.split('=')[1];
   if (!token) return res.sendStatus(401);
   try {
     if (secret) {
@@ -23,6 +23,7 @@ const authorization = (req: RequestAuth, res: Response, next: NextFunction) => {
       if (typeof data !== "string") {
         req.userId = data.id;
         req.userRole = data.role_id;
+        console.log(req)
       }
     }
     return next();
@@ -32,7 +33,7 @@ const authorization = (req: RequestAuth, res: Response, next: NextFunction) => {
 };
 
 const isAdmin = (req: RequestAuth, res: Response, next: NextFunction) => {
-  if (req.userRole === "1") return next();
+  if (req.userRole == "1") return next();
   return res.sendStatus(403);
 };
 
