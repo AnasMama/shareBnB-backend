@@ -1,3 +1,4 @@
+import ProjectManager from "./ProjectManager";
 import UserManager from "./UserManager";
 
-export { UserManager };
+export { UserManager, ProjectManager };

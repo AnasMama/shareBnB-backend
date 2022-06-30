@@ -4,10 +4,7 @@ import { UpdatedUser, User } from "../models/UserManager";
 import * as argon2 from "argon2";
 import { generateToken } from "../services/auth";
 import Joi from "joi";
-
-interface Error {
-  message: string;
-}
+import { Error } from ".";
 
 interface UserWithRole extends User {
   role_name: string;
